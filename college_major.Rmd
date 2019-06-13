@@ -1,0 +1,92 @@
+---
+  title: "Economic Guide to College Major"
+  output: github_document
+---
+  
+```{r results="asis",  echo=FALSE}
+cat('
+<style type="text/css">
+.sourceCode {
+    font-family: Fira Code Retina;
+}
+.cover {
+background-color: rgba(15, 15, 15, 1)
+}
+
+th {
+background-color: rgba(0, 175, 214, 1)
+}
+
+.pagedtable-header-type {
+color : rgba(214, 214, 214, 1)
+}
+
+h1, h2, h3 {
+color: rgba(0, 175, 214, 1)
+}
+
+</style>
+')
+```
+
+Loading the library:
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(hrbrthemes)
+library(scales)
+```
+
+Read the file
+
+```{r}
+recent_grads <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2018/2018-10-16/recent-grads.csv")
+
+recent_grads
+```
+
+## Which College Majors make more money than others?
+
+Let's explore the median salary
+
+```{r fig.width=9}
+recent_grads %>%
+  mutate(Major_category = fct_reorder(Major_category, Median)) %>%
+  ggplot(aes(x = Major_category,y = Median)) +
+  geom_boxplot() +
+  coord_flip() +
+  scale_y_continuous(labels = dollar_format()) +
+  theme_ipsum_rc()
+```
+
+Bar plot of the median:
+
+```{r fig.width=9}
+recent_grads %>%
+  group_by(Major_category) %>%
+  summarize(Median = median(Median)) %>%
+  mutate(Major_category = fct_reorder(Major_category, Median)) %>%
+  ggplot(aes(x = Major_category,y = Median)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels = dollar_format()) +
+  theme_ipsum_rc()
+```
+
+### What are the highest earning Majors ?
+
+```{r fig.width=9}
+recent_grads %>%
+  arrange(desc(Median)) %>%
+  select(Major, Major_category, Median, P25th, P75th) %>%
+  head(20) %>%
+  mutate(Major = fct_reorder(Major, Median)) %>%
+  ggplot(aes(Major, Median, color = Major_category)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = P25th, ymax = P75th)) + 
+  expand_limits(y = 0) +
+  scale_y_continuous(labels = dollar_format()) + 
+  coord_flip() +
+  theme_ipsum_rc()
+```
+
